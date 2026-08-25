@@ -1,5 +1,7 @@
 # ElixirChallenge
 
+[![CI](https://github.com/sergei-krylov/elixir_challenge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sergei-krylov/elixir_challenge/actions/workflows/ci.yml)
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

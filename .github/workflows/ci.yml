@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-# A new push to a branch makes an in-flight run for that branch obsolete.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,8 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Erlang/Elixir versions come from .tool-versions, so CI and local
-      # development cannot drift apart.
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         id: beam
