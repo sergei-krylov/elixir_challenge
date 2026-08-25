@@ -51,6 +51,11 @@ Points the brief leaves open:
 - **Mass is a positive integer**, capped at 1,000,000,000 kg. A larger integer
   overflows float conversion inside the formula and
   raises `ArithmeticError`.
+- **Float arithmetic is precise enough.** Gravity and the coefficients carry
+  three decimals each, so a step's true value is always a multiple of 1e-6 —
+  far above the float error at the largest allowed mass, so rounding down never
+  lands on the wrong integer. The tests check every mass whose value falls on a
+  whole number against the same formula in integers.
 - **Unfinished steps are skipped and counted**, not treated as errors, so the
   total stays live while a path is being edited.
 - **Flight path coherence is advisory.** The brief never fixes where a mission

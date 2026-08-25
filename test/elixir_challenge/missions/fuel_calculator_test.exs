@@ -5,9 +5,15 @@ defmodule ElixirChallenge.Missions.FuelCalculatorTest do
   alias ElixirChallenge.Missions.Calculation
   alias ElixirChallenge.Missions.FuelCalculator
   alias ElixirChallenge.Missions.Mission
+  alias ElixirChallenge.Missions.Planet
   alias ElixirChallenge.Missions.Step
 
   doctest FuelCalculator
+
+  # Coefficient and constant per action, with the coefficient scaled to thousandths.
+  @milli_coefficients %{launch: {42, 33}, land: {33, 42}}
+
+  @combos for action <- [:launch, :land], planet <- Planet.ids(), do: {action, planet}
 
   describe "increment/3" do
     test "applies the landing formula from the brief" do
@@ -27,6 +33,31 @@ defmodule ElixirChallenge.Missions.FuelCalculatorTest do
 
     test "goes negative for craft too light to need fuel" do
       assert FuelCalculator.increment(100, :launch, :moon) < 0
+    end
+  end
+
+  # The formula runs in floats, but gravity and the coefficient each have three
+  # decimals, so its exact value is `mass * g * c / 1_000_000` in integers and
+  # always a multiple of 1.0e-6. Float error at the largest allowed mass is an
+  # order of magnitude smaller, which is what these pin down.
+  describe "increment/3 precision" do
+    test "the integer reference reproduces the gravity constants" do
+      for planet <- Planet.ids() do
+        assert milli_gravity(planet) / 1000 == Planet.gravity(planet)
+      end
+    end
+
+    test "matches integer arithmetic at every mass whose result is a whole number" do
+      for {action, planet} <- @combos do
+        masses = boundary_masses(action, planet)
+
+        assert masses != []
+        assert_exact(masses, action, planet)
+      end
+    end
+
+    test "matches integer arithmetic across a dense range of masses" do
+      for {action, planet} <- @combos, do: assert_exact(1..50_000, action, planet)
     end
   end
 
@@ -201,5 +232,35 @@ defmodule ElixirChallenge.Missions.FuelCalculatorTest do
 
       assert %Calculation{total: 0, ignored_steps: 2} = FuelCalculator.calculate(mission)
     end
+  end
+
+  defp assert_exact(masses, action, planet) do
+    mismatches =
+      Enum.reject(masses, fn mass ->
+        FuelCalculator.increment(mass, action, planet) == exact_increment(mass, action, planet)
+      end)
+
+    assert mismatches == [],
+           "#{action}/#{planet} disagrees at #{inspect(Enum.take(mismatches, 5))}"
+  end
+
+  defp exact_increment(mass, action, planet) do
+    {coefficient, constant} = @milli_coefficients[action]
+
+    Integer.floor_div(mass * milli_gravity(planet) * coefficient, 1_000_000) - constant
+  end
+
+  defp milli_gravity(planet), do: round(Planet.gravity(planet) * 1000)
+
+  # Every allowed mass whose exact result lands on an integer, plus its
+  # neighbours. Those are the only masses where a float slip could flip `floor`.
+  defp boundary_masses(action, planet) do
+    {coefficient, _constant} = @milli_coefficients[action]
+    period = div(1_000_000, Integer.gcd(milli_gravity(planet) * coefficient, 1_000_000))
+
+    period
+    |> Stream.iterate(&(&1 + period))
+    |> Stream.take_while(&(&1 <= Mission.max_mass()))
+    |> Enum.flat_map(&[&1 - 1, &1, &1 + 1])
   end
 end
