@@ -17,7 +17,7 @@ defmodule ElixirChallengeWeb.Router do
   scope "/", ElixirChallengeWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", MissionLive
   end
 
   # Other scopes may use custom stacks.

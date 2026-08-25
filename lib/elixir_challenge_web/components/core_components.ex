@@ -95,7 +95,7 @@ defmodule ElixirChallengeWeb.CoreComponents do
       <.button phx-click="go" variant="primary">Send!</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
-  attr :rest, :global, include: ~w(href navigate patch method download name value disabled)
+  attr :rest, :global, include: ~w(href navigate patch method download name value disabled type)
   attr :class, :any
   attr :variant, :string, values: ~w(primary)
   slot :inner_block, required: true
@@ -332,6 +332,29 @@ defmodule ElixirChallengeWeb.CoreComponents do
       </div>
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
+    """
+  end
+
+  @doc """
+  Renders a bordered card wrapping one section of a page.
+
+  ## Examples
+
+      <.card>
+        <h2>Totals</h2>
+      </.card>
+  """
+  attr :class, :any, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def card(assigns) do
+    ~H"""
+    <section class={["card border border-base-300 bg-base-100", @class]} {@rest}>
+      <div class="card-body">
+        {render_slot(@inner_block)}
+      </div>
+    </section>
     """
   end
 
