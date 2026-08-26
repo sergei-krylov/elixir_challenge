@@ -6,6 +6,17 @@ Calculates the fuel a spacecraft needs to fly a path of launches and landings
 across the Solar System. Built with Elixir, Phoenix and LiveView: the flight
 path is assembled in the browser and the total updates as you edit it.
 
+## Demo
+
+To see the app demo please visit:
+https://elixir-challenge.onrender.com/
+
+Note: it is built on Free web service instance.
+
+Free web service instance spin down after periods of inactivity.
+It spins back up whenever it next receives an HTTP request or new WebSocket connection.
+This process takes about one minute.
+
 ## Running
 
 ```bash
